@@ -1,0 +1,61 @@
+hydra-app:
+    build: hydra
+    ports:
+        - "3000:3000"
+    environment:
+        HYDRA_DBI: dbi:Pg:dbname=hydra;host=hydra-db;user=hydra;password=hydra
+        HYDRA_USERNAME: matejc
+        HYDRA_FULLNAME: Matej Cotman
+        HYDRA_EMAIL: cotman.matejc@gmail.com
+        HYDRA_PASSWORD: gAo5gm4QcybRLtJf
+    volumes:
+        - /var/volumes/hydra/app:/var/lib/hydra
+        - /var/volumes/hydra/nix:/nix
+    links:
+        - hydra-db
+        - statsd
+        - builder1
+        - builder2
+        - builder3
+        - builder4
+    volumes_from:
+        - data
+hydra-db:
+    image: postgres:9.4
+    environment:
+        POSTGRES_PASSWORD: hydra
+        POSTGRES_USER: hydra
+        POSTGRES_DB: hydra
+    volumes:
+        - /var/volumes/hydra/pg:/var/lib/postgresql/data
+builder1:
+    build: builder
+    volumes_from:
+        - data:ro
+    volumes:
+        - /var/volumes/hydra/nix1:/nix
+builder2:
+    build: builder
+    volumes_from:
+        - data:ro
+    volumes:
+        - /var/volumes/hydra/nix2:/nix
+builder3:
+    build: builder
+    volumes_from:
+        - data:ro
+    volumes:
+        - /var/volumes/hydra/nix3:/nix
+builder4:
+    build: builder
+    volumes_from:
+        - data:ro
+    volumes:
+        - /var/volumes/hydra/nix4:/nix
+data:
+    build: data
+statsd:
+    image: hopsoft/graphite-statsd:latest
+    ports:
+        - "8000:80"
+    restart: always
